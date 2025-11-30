@@ -1,0 +1,202 @@
+---
+title: "Workshop 9: Histograms, line graphs, and scale functions"
+output:
+  prettydoc::html_pretty:
+    theme: architect
+    toc: true
+    number_sections: true
+author: "YOUR_NAME_HERE"
+date: "2024-09-03"
+editor_options: 
+  chunk_output_type: inline
+  markdown: 
+  wrap: none
+---
+
+# Introduction
+
+Welcome!
+
+This workshop is a hands-on approach to data visualization and reviewing some functions you're already familiar with.
+
+This week's lesson notes have been linked below. They can be very helpful for completing the exercise, so feel free to refer to them during the workshop!
+
+-   [Lines, scales, and labels](https://the-graph-courses.github.io/data_on_display_wp/lessons/ls03_line_graphs.html)
+
+-   [Histograms with {ggplot2}](https://the-graph-courses.github.io/data_on_display_wp/lessons/ls04_histograms.html)
+
+# Load packages
+
+```{r}
+pacman::p_load(tidyverse, here, outbreaks)
+```
+
+# Data: Linelist of Ebola cases from West Africa
+
+Today we will use a data from the {outbreaks} package. Run the code below to load in a data frame of simulated Ebola linelist for West Africa, 2014-1015. We also convert it to a tibble for nicer printing. 
+
+```{r}
+# Load data from package
+ebola_wa <- outbreaks::ebola_sim_clean$linelist %>% as_tibble()
+
+# Inspect dataframe
+ebola_wa
+```
+
+**Checkpoint**: You should have 5,829 rows and 11 columns if you've loaded the data correctly! 
+
+```{r}
+# Look at data classes of each variable
+glimpse(ebola_wa)
+```
+
+**Key takeaway:** We have several **date** variables that could be visualized on the continuous axis for histograms and line graphs.
+
+Use the `summary()` function to look at the date ranges in this dataset.
+
+```{r}
+# Look at variable ranges
+"WRITE YOUR CODE HERE"
+```
+
+You can see that cases are recorded from early 2014 to mid 2015. The variables `date_of_hospitalisation` and `date_of_onset` are the most complete (they have no NAs), so we will be using them for visualization in this exercise.
+
+# Histograms
+
+First, create a basic histogram with 12 bars, showing the distribution of the `date_of_hospitalisation` variable.
+
+-   Choose a custom fill color and outline color for the bars of your histogram (use any colors of your choice).
+
+```{r}
+"WRITE YOUR CODE HERE"
+```
+
+We can set the bin width for this histogram as usual. In this case, since the variable is a date, the bin width represents the **number of days**.
+
+-   Adjust your code to plot a histogram with weekly bins (every 7 days).
+
+```{r}
+"WRITE YOUR CODE HERE"
+```
+
+-   Now, build on the code from the previous chunk to add a relevant plot title and axis labels.
+
+```{r}
+"WRITE YOUR CODE HERE"
+```
+
+When you plot dates, sometimes the default axis labels may not be ideal. In this plot, `ggplot()` automatically labels the x-axis every 4 months, but we may want to modify this.
+
+In the pre-work lessons you learned how to customize scale breaks using `scale_x_continuous(breaks = ...)`, but for date variables we will use a slightly different method.
+
+## Customizing Date Axis with `scale_x_date()`
+
+*In this section, keep building on the code you created in the chunks above. This way, your histograms will have a similar appearance, but with more details added as you progress in the exercise!*
+
+You can customize the frequency of date axis labels using a function called `scale_x_date()` and specifying `date_breaks`.
+
+For example, let's say we want to label the axis every **two months**. To customize the labels, simply add this layer to your previous code:
+
+```{r}
+"PASTE YOUR CODE HERE" +
+  scale_x_date(date_breaks = "2 months")
+```
+
+You might notice that the axis tick labels (AKA the date format) are now quite long. Let's change the format from `YYYY-MM-DD` to `Month-YY` instead.
+
+To customize the format of the dates, we can add `date_labels` inside `scale_x_date()` and set a specific date format, like so:
+
+```{r}
+"PASTE YOUR CODE HERE" +
+  scale_x_date(
+    date_breaks = "2 months",
+    date_labels = "%B %y"
+  ) # see table below for explanation
+```
+
+When customizing date formats in {ggplot2}, we use specific letter codes to represent various components of a date. Here are some common codes that you can give to `date_labels`:
+
+![](../images/date_codes_table.png)
+
+Now, modify the date format of the axis labels on the previous histogram one last time to display **ABBREVIATED MONTH NAMES** for each month.
+
+```{r}
+"WRITE YOUR CODE HERE"
+```
+
+# Time series plot with `geom_line()`
+
+Let's create a line graph to look at Ebola incidence changed over the time period of this study, by date of symptom onset.
+
+## Summarize data for plotting
+
+First, create a summary data frame showing the number of cases for each **onset date**, split by **outcome** (i.e., calculate the total number of cases grouped by onset date and outcome). You can drop individuals with no outcome.
+
+HINT: For this, consider the `group_by()` and `count()` functions. Your output data frame should look like this: 
+
+```
+2014-04-21    Recover     2
+2014-04-26    Recover     1
+2014-04-27    Death       1
+2014-05-01    Death       1
+2014-05-01    Recover     1
+And so on....
+```
+
+```{r}
+ebola_wa_summary <- "WRITE YOUR CODE HERE"
+
+ebola_wa_summary
+```
+
+**Checkpoint**: Your summary table should have 674 rows and 3 columns.
+
+## Basic time series line graph with summarized data
+
+Now, plot a line graph showing the number of cases per onset date, and color the lines by outcome.
+
+```{r}
+"WRITE YOUR CODE HERE"
+```
+
+**Checkpoint**: Your plot should now have two lines: one for deaths and one for recovered cases.
+
+Next, make the following modifications:
+
+1)  Edit the line width and transparency of your lines.
+
+2)  Use `scale_x_date()` to specify date breaks and formatting of your choice.
+
+3)  Add a title, subtitle, and edit the axis names.
+
+4)  Change the legend title from "outcome" to "Outcome".
+
+```{r}
+"WRITE YOUR CODE HERE"
+```
+
+# Bonus challenge: Color Scale functions
+
+Did you know that `scale_*_()` functions are also used to customize the color palettes of `{ggplot2} graphs?`
+
+Two functions: `scale_color_manual()` and `scale_color_brewer()` are some examples for adjusting colors in ggplot2 plots! Do some online research on how the functions work to complete the bonus challenge below.
+
+First, try customizing the colors of the line graph you previously created with `scale_color_manual()`. Start by understanding the colors you want to apply to your plot. You can define specific colors manually using hexadecimal codes or by referencing pre-defined color names.
+
+```{r}
+# Color adjustment using scale_color_manual()
+"WRITE YOUR CODE HERE"
+```
+
+While `scale_color_manual()` allows us to manually set colors, sometimes it's challenging to choose visually appealing colors to communicate your plots in a meaningful way.
+
+In most cases, `scale_color_brewer()` is a better option, providing pre-defined palettes for easy and aesthetically pleasing color choices! You can explore the available palettes [here](https://r-graph-gallery.com/38-rcolorbrewers-palettes.html).
+
+(NOTE: `scale_color_brewer()` is a scale function from the `RColorBrewer package` whose functions are loaded with `ggplot2`! Feel free to explore other built-in `ggplot2` palettes on your own!)
+
+Customize the colors of your line graph using the `scale_color_brewer()` function instead! (HINT: You can use this [LINK](https://r-graph-gallery.com/38-rcolorbrewers-palettes.html) to review the different palettes and the hexadecimal codes)
+
+```{r}
+# Color adjustment using scale_color_brewer()
+"WRITE YOUR CODE HERE"
+```
