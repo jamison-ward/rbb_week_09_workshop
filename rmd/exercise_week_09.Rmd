@@ -5,10 +5,10 @@ output:
     theme: architect
     toc: true
     number_sections: true
-author: "YOUR_NAME_HERE"
+author: "Jamison Ward"
 date: "2024-09-03"
 editor_options: 
-  chunk_output_type: inline
+  chunk_output_type: console
   markdown: 
   wrap: none
 ---
@@ -33,7 +33,7 @@ pacman::p_load(tidyverse, here, outbreaks)
 
 # Data: Linelist of Ebola cases from West Africa
 
-Today we will use a data from the {outbreaks} package. Run the code below to load in a data frame of simulated Ebola linelist for West Africa, 2014-1015. We also convert it to a tibble for nicer printing. 
+Today we will use a data from the {outbreaks} package. Run the code below to load in a data frame of simulated Ebola linelist for West Africa, 2014-1015. We also convert it to a tibble for nicer printing.
 
 ```{r}
 # Load data from package
@@ -43,7 +43,7 @@ ebola_wa <- outbreaks::ebola_sim_clean$linelist %>% as_tibble()
 ebola_wa
 ```
 
-**Checkpoint**: You should have 5,829 rows and 11 columns if you've loaded the data correctly! 
+**Checkpoint**: You should have 5,829 rows and 11 columns if you've loaded the data correctly!
 
 ```{r}
 # Look at data classes of each variable
@@ -56,7 +56,7 @@ Use the `summary()` function to look at the date ranges in this dataset.
 
 ```{r}
 # Look at variable ranges
-"WRITE YOUR CODE HERE"
+summary(ebola_wa)
 ```
 
 You can see that cases are recorded from early 2014 to mid 2015. The variables `date_of_hospitalisation` and `date_of_onset` are the most complete (they have no NAs), so we will be using them for visualization in this exercise.
@@ -68,7 +68,12 @@ First, create a basic histogram with 12 bars, showing the distribution of the `d
 -   Choose a custom fill color and outline color for the bars of your histogram (use any colors of your choice).
 
 ```{r}
-"WRITE YOUR CODE HERE"
+ggplot(data = ebola_wa,
+       mapping = aes(x = date_of_hospitalisation)) +
+  geom_histogram(bins = 12,
+                 color = "white",
+                 fill = "darkgray") +
+  theme_minimal()
 ```
 
 We can set the bin width for this histogram as usual. In this case, since the variable is a date, the bin width represents the **number of days**.
@@ -76,13 +81,26 @@ We can set the bin width for this histogram as usual. In this case, since the va
 -   Adjust your code to plot a histogram with weekly bins (every 7 days).
 
 ```{r}
-"WRITE YOUR CODE HERE"
+ggplot(data = ebola_wa,
+       mapping = aes(x = date_of_hospitalisation)) +
+  geom_histogram(binwidth = 7,
+                 color = "white",
+                 fill = "darkgray") +
+  theme_minimal()
 ```
 
 -   Now, build on the code from the previous chunk to add a relevant plot title and axis labels.
 
 ```{r}
-"WRITE YOUR CODE HERE"
+ggplot(data = ebola_wa,
+       mapping = aes(x = date_of_hospitalisation)) +
+  geom_histogram(binwidth = 7,
+                 color = "white",
+                 fill = "darkgray") +
+  labs(title = "Weekly Ebola Cases in West Africa",
+       x = "Date of Hospitalization",
+       y = "Number of Cases") +
+  theme_minimal()
 ```
 
 When you plot dates, sometimes the default axis labels may not be ideal. In this plot, `ggplot()` automatically labels the x-axis every 4 months, but we may want to modify this.
@@ -98,7 +116,15 @@ You can customize the frequency of date axis labels using a function called `sca
 For example, let's say we want to label the axis every **two months**. To customize the labels, simply add this layer to your previous code:
 
 ```{r}
-"PASTE YOUR CODE HERE" +
+ggplot(data = ebola_wa,
+       mapping = aes(x = date_of_hospitalisation)) +
+  geom_histogram(binwidth = 7,
+                 color = "white",
+                 fill = "darkgray") +
+  labs(title = "Weekly Ebola Cases in West Africa",
+       x = "Date of Hospitalization",
+       y = "Number of Cases") +
+  theme_minimal() +
   scale_x_date(date_breaks = "2 months")
 ```
 
@@ -107,7 +133,15 @@ You might notice that the axis tick labels (AKA the date format) are now quite l
 To customize the format of the dates, we can add `date_labels` inside `scale_x_date()` and set a specific date format, like so:
 
 ```{r}
-"PASTE YOUR CODE HERE" +
+ggplot(data = ebola_wa,
+       mapping = aes(x = date_of_hospitalisation)) +
+  geom_histogram(binwidth = 7,
+                 color = "white",
+                 fill = "darkgray") +
+  labs(title = "Weekly Ebola Cases in West Africa",
+       x = "Date of Hospitalization",
+       y = "Number of Cases") +
+  theme_minimal() +
   scale_x_date(
     date_breaks = "2 months",
     date_labels = "%B %y"
@@ -121,7 +155,19 @@ When customizing date formats in {ggplot2}, we use specific letter codes to repr
 Now, modify the date format of the axis labels on the previous histogram one last time to display **ABBREVIATED MONTH NAMES** for each month.
 
 ```{r}
-"WRITE YOUR CODE HERE"
+ggplot(data = ebola_wa,
+       mapping = aes(x = date_of_hospitalisation)) +
+  geom_histogram(binwidth = 7,
+                 color = "white",
+                 fill = "darkgray") +
+  labs(title = "Weekly Ebola Cases in West Africa",
+       x = "Date of Hospitalization",
+       y = "Number of Cases") +
+  theme_minimal() +
+  scale_x_date(
+    date_breaks = "2 months",
+    date_labels = "%b '%y"
+  )
 ```
 
 # Time series plot with `geom_line()`
@@ -132,9 +178,9 @@ Let's create a line graph to look at Ebola incidence changed over the time perio
 
 First, create a summary data frame showing the number of cases for each **onset date**, split by **outcome** (i.e., calculate the total number of cases grouped by onset date and outcome). You can drop individuals with no outcome.
 
-HINT: For this, consider the `group_by()` and `count()` functions. Your output data frame should look like this: 
+HINT: For this, consider the `group_by()` and `count()` functions. Your output data frame should look like this:
 
-```
+```         
 2014-04-21    Recover     2
 2014-04-26    Recover     1
 2014-04-27    Death       1
@@ -144,7 +190,11 @@ And so on....
 ```
 
 ```{r}
-ebola_wa_summary <- "WRITE YOUR CODE HERE"
+ebola_wa_summary <- ebola_wa %>% 
+  filter(!(is.na(outcome))) %>% 
+  group_by(date_of_onset, outcome) %>% 
+  count() %>% 
+  ungroup()
 
 ebola_wa_summary
 ```
@@ -156,7 +206,9 @@ ebola_wa_summary
 Now, plot a line graph showing the number of cases per onset date, and color the lines by outcome.
 
 ```{r}
-"WRITE YOUR CODE HERE"
+ggplot(data = ebola_wa_summary,
+       mapping = aes(x = date_of_onset, y = n)) +
+  geom_line(aes(color = outcome))
 ```
 
 **Checkpoint**: Your plot should now have two lines: one for deaths and one for recovered cases.
@@ -172,7 +224,19 @@ Next, make the following modifications:
 4)  Change the legend title from "outcome" to "Outcome".
 
 ```{r}
-"WRITE YOUR CODE HERE"
+ggplot(data = ebola_wa_summary,
+       mapping = aes(x = date_of_onset, y = n)) +
+  geom_line(aes(color = outcome),
+            linewidth = 0.75,
+            alpha = 0.75) +
+  scale_x_date(date_breaks = "2 months",
+               date_labels = "%b '%y") +
+  labs(title = "Ebola Cases in West Africa",
+       subtitle = "Grouped by Case Outcome",
+       x = "Date of Onset",
+       y = "Number of Cases",
+       color = "Outcome") +
+  theme_minimal()
 ```
 
 # Bonus challenge: Color Scale functions
@@ -185,7 +249,23 @@ First, try customizing the colors of the line graph you previously created with 
 
 ```{r}
 # Color adjustment using scale_color_manual()
-"WRITE YOUR CODE HERE"
+ggplot(data = ebola_wa_summary,
+       mapping = aes(x = date_of_onset, y = n)) +
+  geom_line(aes(color = outcome),
+            linewidth = 0.75,
+            alpha = 0.75) +
+  scale_x_date(
+    date_breaks = "2 months",
+    date_labels = "%b '%y") +
+  scale_color_manual(values = c("Death" = "indianred3",
+                                "Recover" = "cornflowerblue")) +
+  labs(title = "Ebola Cases in West Africa",
+       subtitle = "Grouped by Case Outcome",
+       x = "Date of Onset",
+       y = "Number of Cases",
+       color = "Outcome") +
+  theme_minimal() +
+  theme(legend.position = "bottom")
 ```
 
 While `scale_color_manual()` allows us to manually set colors, sometimes it's challenging to choose visually appealing colors to communicate your plots in a meaningful way.
@@ -198,5 +278,21 @@ Customize the colors of your line graph using the `scale_color_brewer()` functio
 
 ```{r}
 # Color adjustment using scale_color_brewer()
-"WRITE YOUR CODE HERE"
+ggplot(data = ebola_wa_summary,
+       mapping = aes(x = date_of_onset, y = n)) +
+  geom_line(aes(color = outcome),
+            linewidth = 0.75,
+            alpha = 0.75) +
+  scale_x_date(
+    date_breaks = "2 months",
+    date_labels = "%b '%y") +
+  scale_color_brewer(palette = "Set1",
+                     direction = 1) +
+  labs(title = "Ebola Cases in West Africa",
+       subtitle = "Grouped by Case Outcome",
+       x = "Date of Onset",
+       y = "Number of Cases",
+       color = "Outcome") +
+  theme_minimal() +
+  theme(legend.position = "bottom")
 ```
